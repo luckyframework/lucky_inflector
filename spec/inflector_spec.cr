@@ -1,6 +1,6 @@
 require "./spec_helper"
 
-require "../src/inflector"
+require "../src/lucky_support/inflector"
 # TODO: add more comprehensive test cases
 # require "./inflector_test_cases"
 
