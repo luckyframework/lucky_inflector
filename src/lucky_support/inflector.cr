@@ -123,10 +123,10 @@ module LuckySupport
     private def apply_inflections(word, rules)
       result = word.to_s.dup
 
-      if result.empty? || inflections.uncountables.includes?(result)
+      if result.empty? || inflections.uncountable?(result)
         result
       else
-        rules.each { |(rule, replacement)|
+        rules.each { |rule, replacement|
           if result.index(rule)
             result = result.sub(rule, replacement)
             break

@@ -6,9 +6,25 @@ module LuckySupport
     # TODO: this needs a propoer spec
     class Inflections
       getter :plurals, :singulars, :uncountables, :humans, :acronyms, :acronym_regex
+      @regex_array : Array(Regex)
 
       def initialize
         @plurals = {
+          # irregulars
+          /(z)ombies$/i => "\\1ombies",
+          /(z)ombie$/i => "\\1ombies",
+          /(m)oves$/i => "\\1oves",
+          /(m)ove$/i => "\\1oves",
+          /(s)exes$/i => "\\1exes",
+          /(s)ex$/i => "\\1exes",
+          /(c)hildren$/i => "\\1hildren",
+          /(c)hild$/i => "\\1hildren",
+          /(m)en$/i => "\\1en",
+          /(m)an$/i => "\\1en",
+          /(p)eople$/i => "\\1eople",
+          /(p)erson$/i => "\\1eople",
+
+          # plurals
           /(quiz)$/i => "\\1zes",
           /^(oxen)$/i => "\\1",
           /^(ox)$/i => "\\1en",
@@ -31,8 +47,24 @@ module LuckySupport
           /s$/i => "s",
           /$/ => "s"
         }
-      
+
         @singulars = {
+          # irregulars
+          /(z)ombies$/i => "\\1ombie",
+          /(z)ombie$/i => "\\1ombie",
+          /(m)oves$/i => "\\1ove",
+          /(m)ove$/i => "\\1ove",
+          /(s)exes$/i => "\\1ex",
+          /(s)ex$/i => "\\1ex",
+          /(c)hildren$/i => "\\1hild",
+          /(c)hild$/i => "\\1hild",
+          /(m)en$/i => "\\1an",
+          /(m)an$/i => "\\1an",
+          /(p)eople$/i => "\\1erson",
+          /(p)erson$/i => "\\1erson",
+          /(database)s$/i => "\\1",
+
+          #singulars
           /(database)s$/i => "\\1",
           /(quiz)zes$/i => "\\1",
           /(matr)ices$/i => "\\1ix",
@@ -63,9 +95,19 @@ module LuckySupport
         }
 
         @uncountables = %w(equipment information rice money species series fish sheep jeans police)
+        @regex_array = @uncountables.flatten.map{ |word| to_regex(word.downcase) }
+
         @humans = Array(String).new
         @acronyms = Hash(String, String).new
         @acronym_regex = /(?=a)b/
+      end
+
+      def uncountable?(str)
+        @regex_array.any? { |regex| regex.match(str) }
+      end
+
+      private def to_regex(string)
+        /\b#{::Regex.escape(string)}\Z/i
       end
 
       def acronym(word)

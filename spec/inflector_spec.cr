@@ -1,55 +1,51 @@
 require "./spec_helper"
 
 require "../src/lucky_support/inflector"
-# TODO: add more comprehensive test cases
-# require "./inflector_test_cases"
+require "./inflector_test_cases"
+
+include InflectorTestCases
 
 describe LuckySupport::Inflector do
-  describe "plurals" do
-    it "should pluralize" do
-      tests = {
-        "post" => "posts",
-        "octopus" => "octopi",
-        "sheep" => "sheep",
-        "words" => "words",
-        "CamelOctopus" => "CamelOctopi"
-      }
-
-      tests.each do |from, to |
-        LuckySupport::Inflector.pluralize(from).should eq to
+  describe "pluralize" do
+    SingularToPlural.each do |singular, plural|
+      it "should pluralize #{singular}" do
+        LuckySupport::Inflector.pluralize(singular).should eq plural
+        LuckySupport::Inflector.pluralize(singular.capitalize).should eq plural.capitalize
       end
     end
 
     it "should pluralize empty string" do
       LuckySupport::Inflector.pluralize("").should eq ""
     end
+
+    SingularToPlural.each do |singular, plural|
+      it "should pluralize #{plural}" do
+        LuckySupport::Inflector.pluralize(plural).should eq plural
+        LuckySupport::Inflector.pluralize(plural.capitalize).should eq plural.capitalize
+      end
+    end
   end
 
   describe "singular" do
-    it "should singularize" do
-      tests = {
-        "posts" => "post",
-        "octopi" => "octopus",
-        "sheep" => "sheep",
-        "word" => "word",
-        "CamelOctopi" => "CamelOctopus"
-      }
+    SingularToPlural.each do |singular, plural|
+      it "should singularize #{plural}" do
+        LuckySupport::Inflector.singularize(plural).should eq singular
+        LuckySupport::Inflector.singularize(plural.capitalize).should eq singular.capitalize
+      end
+    end
 
-      tests.each do |from, to|
-        LuckySupport::Inflector.singularize(from).should eq to
+    SingularToPlural.each do |singular, plural|
+      it "should singularize #{singular}" do
+        LuckySupport::Inflector.singularize(singular).should eq singular
+        LuckySupport::Inflector.singularize(singular.capitalize).should eq singular.capitalize
       end
     end
   end
 
   describe "camelize" do
-    it "should camelize" do
-      tests = {
-        "active_model" => "ActiveModel",
-        "active_model/errors" => "ActiveModel::Errors",
-      }
-
-      tests.each do |from, to|
-        LuckySupport::Inflector.camelize(from).should eq to
+    InflectorTestCases::CamelToUnderscore.each do |camel, underscore|
+      it "should camelize #{underscore}" do
+        LuckySupport::Inflector.camelize(underscore).should eq camel
       end
     end
 
@@ -57,27 +53,59 @@ describe LuckySupport::Inflector do
       LuckySupport::Inflector.camelize("active_model", false).should eq "activeModel"
       LuckySupport::Inflector.camelize("active_model/errors", false).should eq "activeModel::Errors"
     end
+
+    it "test camelize with lower downcases the first letter" do
+      LuckySupport::Inflector.camelize("Capital", false).should eq "capital"
+    end
+
+    it "test camelize with underscores" do
+      LuckySupport::Inflector.camelize("Camel_Case").should eq "CamelCase"
+    end
   end
 
-  describe "humanize" do
-    it "should humanize" do
-      tests = {
-        "employee_salary" => "Employee salary",
-        "author_id" => "Author",
-        "_id" => "Id"
-      }
-
-      tests.each do |from, to|
-        LuckySupport::Inflector.humanize(from).should eq to
+  describe "underscore" do
+    CamelToUnderscore.each do |camel, underscore|
+      it "should underscore #{camel}" do
+        LuckySupport::Inflector.underscore(camel).should eq underscore
       end
     end
 
-    it "should not capitalize" do
-      LuckySupport::Inflector.humanize("author_id", capitalize: false).should eq "author"
+    CamelToUnderscoreWithoutReverse.each do |camel, underscore|
+      it "should underscore without reverse #{camel}" do
+        LuckySupport::Inflector.underscore(camel).should eq underscore
+      end
     end
 
-    it "should not capitalize" do
-      LuckySupport::Inflector.humanize("author_id", keep_id_suffix: true).should eq "Author id"
+    CamelWithModuleToUnderscoreWithSlash.each do |camel, underscore|
+      it "should camelize with module #{underscore}" do
+        LuckySupport::Inflector.camelize(underscore).should eq camel
+      end
+    end
+
+    CamelWithModuleToUnderscoreWithSlash.each do |camel, underscore|
+      it "should underscore with slashes #{camel}" do
+        LuckySupport::Inflector.underscore(camel).should eq underscore
+      end
+    end
+  end
+
+  describe "humanize" do
+    UnderscoreToHuman.each do |underscore, human|
+      it "should humanize #{underscore}" do
+        LuckySupport::Inflector.humanize(underscore).should eq human
+      end
+    end
+
+    UnderscoreToHumanWithoutCapitalize.each do |underscore, human|
+      it "should not capitalize #{underscore}" do
+        LuckySupport::Inflector.humanize(underscore, capitalize: false).should eq human
+      end
+    end
+
+    UnderscoreToHumanWithKeepIdSuffix.each do |underscore, human|
+    it "should keep id suffix #{underscore}" do
+        LuckySupport::Inflector.humanize(underscore, keep_id_suffix: true).should eq human
+      end
     end
   end
 
@@ -96,145 +124,117 @@ describe LuckySupport::Inflector do
   end
 
   describe "titleize" do
-    it "should titleize" do
-      tests = {
-        "man from the boondocks" => "Man From The Boondocks",
-        "x-men: the last stand" => "X Men: The Last Stand",
-        "TheManWithoutAPast" => "The Man Without A Past",
-        "raiders_of_the_lost_ark" => "Raiders Of The Lost Ark",
-      }
-
-      tests.each do |from, to|
-        LuckySupport::Inflector.titleize(from).should eq to
+    MixtureToTitleCase.each do |before, titleized|
+      it "should titleize mixture to title case #{before}" do
+        LuckySupport::Inflector.titleize(before).should eq titleized
       end
     end
 
-    it "should keep id suffix" do
-      LuckySupport::Inflector.titleize("string_ending_with_id", keep_id_suffix: true).should eq "String Ending With Id"
+    MixtureToTitleCaseWithKeepIdSuffix.each do |before, titleized|
+      it "should titleize with keep id suffix mixture to title case #{before}" do
+        LuckySupport::Inflector.titleize(before, keep_id_suffix: true).should eq titleized
+      end
     end
   end
 
   describe "tableize" do
-    it "should tableize" do
-      tests = {
-        "RawScaledScorer" => "raw_scaled_scorers",
-        "ham_and_egg" => "ham_and_eggs",
-        "fancyCategory" => "fancy_categories"
-      }
-
-      tests.each do |from, to|
-        LuckySupport::Inflector.tableize(from).should eq to
+    ClassNameToTableName.each do |class_name, table_name|
+      it "should tableize #{class_name}" do
+        LuckySupport::Inflector.tableize(class_name).should eq table_name
       end
     end
   end
 
   describe "classify" do
-    it "should classify" do
-      tests = {
-        "ham_and_eggs" => "HamAndEgg",
-        "posts" => "Post"
-      }
-
-      tests.each do |from, to|
-        LuckySupport::Inflector.classify(from).should eq to
+    ClassNameToTableName.each do |class_name, table_name|
+      it "should classify #{table_name}" do
+        LuckySupport::Inflector.classify(table_name).should eq class_name
+        LuckySupport::Inflector.classify("table_prefix." + table_name).should eq class_name
       end
     end
 
-    it "should not Calculus" do
-      LuckySupport::Inflector.classify("calculus").should_not eq "Calculus"
+    it "should classify with symbol" do
+      LuckySupport::Inflector.classify(:foo_bars).should eq "FooBar"
+    end
+
+    it "should classify with leading schema name" do
+      LuckySupport::Inflector.classify("schema.foo_bar").should eq "FooBar"
     end
   end
 
   describe "dasherize" do
-    it "should dasherize" do
-      tests = {
-        "puni_puni" => "puni-puni"
-      }
+    UnderscoresToDashes.each do |underscored, dasherized|
+      it "should dasherize #{underscored}" do
+        LuckySupport::Inflector.dasherize(underscored).should eq dasherized
+      end
+    end
 
-      tests.each do |from, to|
-        LuckySupport::Inflector.dasherize(from).should eq to
+    UnderscoresToDashes.each_key do |underscored|
+      it "should underscore as reverse of dasherize #{underscored}" do
+        LuckySupport::Inflector.underscore(LuckySupport::Inflector.dasherize(underscored)).should eq underscored
       end
     end
   end
 
   describe "demodulize" do
-    it "should demodulize" do
-      tests = {
-        "ActiveSupport::Inflector::Inflections" => "Inflections",
-        "Inflections" => "Inflections",
-        "::Inflections" => "Inflections",
-        "" => ""
-      }
+    demodulize_tests = {
+      "MyApplication::Billing::Account" => "Account",
+      "Account" => "Account",
+      "::Account" => "Account",
+      "" => ""
+    }
 
-      tests.each do |from, to|
+    demodulize_tests.each do |from, to|
+      it "should demodulize #{from}" do
         LuckySupport::Inflector.demodulize(from).should eq to
       end
     end
   end
 
   describe "deconstantize" do
-    it "should deconstantize" do
-      tests = {
-        "Net::HTTP" => "Net",
-        "::Net::HTTP" => "::Net",
-        "String" => "",
-        "::String" => "",
-        "" => ""
-      }
+    deconstantize_tests = {
+      "MyApplication::Billing::Account" => "MyApplication::Billing",
+      "::MyApplication::Billing::Account" => "::MyApplication::Billing",
+      "MyApplication::Billing" => "MyApplication",
+      "::MyApplication::Billing" => "::MyApplication",
+      "Account" => "", 
+      "::Account" => "",
+      "" => ""
+    }
 
-      tests.each do |from, to|
+    deconstantize_tests.each do |from, to|
+      it "should deconstantize #{from}" do
         LuckySupport::Inflector.deconstantize(from).should eq to
       end
     end
   end
 
   describe "foreign_key" do
-    it "should foreign_key" do
-      tests = {
-        "Message" => "message_id",
-        "Admin::Post" => "post_id"
-      }
-
-      tests.each do |from, to|
-        LuckySupport::Inflector.foreign_key(from).should eq to
+    ClassNameToForeignKeyWithUnderscore.each do |klass, foreign_key|
+      it "should foreign key #{klass}" do
+        LuckySupport::Inflector.foreign_key(klass).should eq foreign_key
       end
     end
 
-    it "should" do
-      LuckySupport::Inflector.foreign_key("Message", false).should eq "messageid"
+    ClassNameToForeignKeyWithoutUnderscore.each do |klass, foreign_key|
+      it "should foreign key without underscore #{klass}" do
+        LuckySupport::Inflector.foreign_key(klass, false).should eq foreign_key
+      end
     end
   end
 
   describe "ordinal" do
-    it "should ordinal" do
-      tests = {
-        1 => "st",
-        2 => "nd",
-        1002 => "nd",
-        1003 => "rd",
-        -11 => "th",
-        -1021 => "st"
-      }
-
-      tests.each do |from, to|
-        LuckySupport::Inflector.ordinal(from).should eq to
+    OrdinalNumbers.each do |number, ordinalized|
+      it "should ordinal #{number}" do
+        (number + LuckySupport::Inflector.ordinal(number)).should eq ordinalized
       end
     end
   end
 
   describe "ordinalize" do
-    it "should ordinalize" do
-      tests = {
-        1 => "1st",
-        2 => "2nd",
-        1002 => "1002nd",
-        1003 => "1003rd",
-        -11 => "-11th",
-        -1021 => "-1021st"
-      }
-
-      tests.each do |from, to|
-        LuckySupport::Inflector.ordinalize(from).should eq to
+    OrdinalNumbers.each do |number, ordinalized|
+      it "should ordinalize #{number}" do
+        LuckySupport::Inflector.ordinalize(number).should eq ordinalized
       end
     end
   end
