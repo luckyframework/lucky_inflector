@@ -1,124 +1,62 @@
+require "./inflector/inflections"
+
 module LuckySupport
-  module Inflector
-    extend self
+  Inflector.inflections.plural(/$/, "s")
+  Inflector.inflections.plural(/s$/i, "s")
+  Inflector.inflections.plural(/^(ax|test)is$/i, "\\1es")
+  Inflector.inflections.plural(/(octop|vir)us$/i, "\\1i")
+  Inflector.inflections.plural(/(octop|vir)i$/i, "\\1i")
+  Inflector.inflections.plural(/(alias|status)$/i, "\\1es")
+  Inflector.inflections.plural(/(bu)s$/i, "\\1ses")
+  Inflector.inflections.plural(/(buffal|tomat)o$/i, "\\1oes")
+  Inflector.inflections.plural(/([ti])um$/i, "\\1a")
+  Inflector.inflections.plural(/([ti])a$/i, "\\1a")
+  Inflector.inflections.plural(/sis$/i, "ses")
+  Inflector.inflections.plural(/(?:([^f])fe|([lr])f)$/i, "\\1\\2ves")
+  Inflector.inflections.plural(/(hive)$/i, "\\1s")
+  Inflector.inflections.plural(/([^aeiouy]|qu)y$/i, "\\1ies")
+  Inflector.inflections.plural(/(x|ch|ss|sh)$/i, "\\1es")
+  Inflector.inflections.plural(/(matr|vert|ind)(?:ix|ex)$/i, "\\1ices")
+  Inflector.inflections.plural(/^(m|l)ouse$/i, "\\1ice")
+  Inflector.inflections.plural(/^(m|l)ice$/i, "\\1ice")
+  Inflector.inflections.plural(/^(ox)$/i, "\\1en")
+  Inflector.inflections.plural(/^(oxen)$/i, "\\1")
+  Inflector.inflections.plural(/(quiz)$/i, "\\1zes")
 
-    # TODO: this class needs work to better support adding inflections at runtime, many methods are still missin here.
-    # TODO: this needs a propoer spec
-    class Inflections
-      getter :plurals, :singulars, :uncountables, :humans, :acronyms, :acronym_regex
-      @regex_array : Array(Regex)
+  Inflector.inflections.singular(/s$/i, "")
+  Inflector.inflections.singular(/(ss)$/i, "\\1")
+  Inflector.inflections.singular(/(n)ews$/i, "\\1ews")
+  Inflector.inflections.singular(/([ti])a$/i, "\\1um")
+  Inflector.inflections.singular(/((a)naly|(b)a|(d)iagno|(p)arenthe|(p)rogno|(s)ynop|(t)he)(sis|ses)$/i, "\\1sis")
+  Inflector.inflections.singular(/(^analy)(sis|ses)$/i, "\\1sis")
+  Inflector.inflections.singular(/([^f])ves$/i, "\\1fe")
+  Inflector.inflections.singular(/(hive)s$/i, "\\1")
+  Inflector.inflections.singular(/(tive)s$/i, "\\1")
+  Inflector.inflections.singular(/([lr])ves$/i, "\\1f")
+  Inflector.inflections.singular(/([^aeiouy]|qu)ies$/i, "\\1y")
+  Inflector.inflections.singular(/(s)eries$/i, "\\1eries")
+  Inflector.inflections.singular(/(m)ovies$/i, "\\1ovie")
+  Inflector.inflections.singular(/(x|ch|ss|sh)es$/i, "\\1")
+  Inflector.inflections.singular(/^(m|l)ice$/i, "\\1ouse")
+  Inflector.inflections.singular(/(bus)(es)?$/i, "\\1")
+  Inflector.inflections.singular(/(o)es$/i, "\\1")
+  Inflector.inflections.singular(/(shoe)s$/i, "\\1")
+  Inflector.inflections.singular(/(cris|test)(is|es)$/i, "\\1is")
+  Inflector.inflections.singular(/^(a)x[ie]s$/i, "\\1xis")
+  Inflector.inflections.singular(/(octop|vir)(us|i)$/i, "\\1us")
+  Inflector.inflections.singular(/(alias|status)(es)?$/i, "\\1")
+  Inflector.inflections.singular(/^(ox)en/i, "\\1")
+  Inflector.inflections.singular(/(vert|ind)ices$/i, "\\1ex")
+  Inflector.inflections.singular(/(matr)ices$/i, "\\1ix")
+  Inflector.inflections.singular(/(quiz)zes$/i, "\\1")
+  Inflector.inflections.singular(/(database)s$/i, "\\1")
 
-      def initialize
-        @plurals = {
-          # irregulars
-          /(z)ombies$/i => "\\1ombies",
-          /(z)ombie$/i => "\\1ombies",
-          /(m)oves$/i => "\\1oves",
-          /(m)ove$/i => "\\1oves",
-          /(s)exes$/i => "\\1exes",
-          /(s)ex$/i => "\\1exes",
-          /(c)hildren$/i => "\\1hildren",
-          /(c)hild$/i => "\\1hildren",
-          /(m)en$/i => "\\1en",
-          /(m)an$/i => "\\1en",
-          /(p)eople$/i => "\\1eople",
-          /(p)erson$/i => "\\1eople",
+  Inflector.inflections.irregular("person", "people")
+  Inflector.inflections.irregular("man", "men")
+  Inflector.inflections.irregular("child", "children")
+  Inflector.inflections.irregular("sex", "sexes")
+  Inflector.inflections.irregular("move", "moves")
+  Inflector.inflections.irregular("zombie", "zombies")
 
-          # plurals
-          /(quiz)$/i => "\\1zes",
-          /^(oxen)$/i => "\\1",
-          /^(ox)$/i => "\\1en",
-          /^(m|l)ice$/i => "\\1ice",
-          /^(m|l)ouse$/i => "\\1ice",
-          /(matr|vert|ind)(?:ix|ex)$/i => "\\1ices",
-          /(x|ch|ss|sh)$/i => "\\1es",
-          /([^aeiouy]|qu)y$/i => "\\1ies",
-          /(hive)$/i => "\\1s",
-          /(?:([^f])fe|([lr])f)$/i => "\\1\\2ves",
-          /sis$/i => "ses",
-          /([ti])a$/i => "\\1a",
-          /([ti])um$/i => "\\1a",
-          /(buffal|tomat)o$/i => "\\1oes",
-          /(bu)s$/i => "\\1ses",
-          /(alias|status)$/i => "\\1es",
-          /(octop|vir)i$/i => "\\1i",
-          /(octop|vir)us$/i => "\\1i",
-          /^(ax|test)is$/i => "\\1es",
-          /s$/i => "s",
-          /$/ => "s"
-        }
-
-        @singulars = {
-          # irregulars
-          /(z)ombies$/i => "\\1ombie",
-          /(z)ombie$/i => "\\1ombie",
-          /(m)oves$/i => "\\1ove",
-          /(m)ove$/i => "\\1ove",
-          /(s)exes$/i => "\\1ex",
-          /(s)ex$/i => "\\1ex",
-          /(c)hildren$/i => "\\1hild",
-          /(c)hild$/i => "\\1hild",
-          /(m)en$/i => "\\1an",
-          /(m)an$/i => "\\1an",
-          /(p)eople$/i => "\\1erson",
-          /(p)erson$/i => "\\1erson",
-          /(database)s$/i => "\\1",
-
-          #singulars
-          /(database)s$/i => "\\1",
-          /(quiz)zes$/i => "\\1",
-          /(matr)ices$/i => "\\1ix",
-          /(vert|ind)ices$/i => "\\1ex",
-          /^(ox)en/i => "\\1",
-          /(alias|status)(es)?$/i => "\\1",
-          /(octop|vir)(us|i)$/i => "\\1us",
-          /^(a)x[ie]s$/i => "\\1xis",
-          /(cris|test)(is|es)$/i => "\\1is",
-          /(shoe)s$/i => "\\1",
-          /(o)es$/i => "\\1",
-          /(bus)(es)?$/i => "\\1",
-          /^(m|l)ice$/i => "\\1ouse",
-          /(x|ch|ss|sh)es$/i => "\\1",
-          /(m)ovies$/i => "\\1ovie",
-          /(s)eries$/i => "\\1eries",
-          /([^aeiouy]|qu)ies$/i => "\\1y",
-          /([lr])ves$/i => "\\1f",
-          /(tive)s$/i => "\\1",
-          /(hive)s$/i => "\\1",
-          /([^f])ves$/i => "\\1fe",
-          /(^analy)(sis|ses)$/i => "\\1sis",
-          /((a)naly|(b)a|(d)iagno|(p)arenthe|(p)rogno|(s)ynop|(t)he)(sis|ses)$/i => "\\1sis",
-          /([ti])a$/i => "\\1um",
-          /(n)ews$/i => "\\1ews",
-          /(ss)$/i => "\\1",
-          /s$/i => ""
-        }
-
-        @uncountables = %w(equipment information rice money species series fish sheep jeans police)
-        @regex_array = @uncountables.flatten.map{ |word| to_regex(word.downcase) }
-
-        @humans = Array(String).new
-        @acronyms = Hash(String, String).new
-        @acronym_regex = /(?=a)b/
-      end
-
-      def uncountable?(str)
-        @regex_array.any? { |regex| regex.match(str) }
-      end
-
-      private def to_regex(string)
-        /\b#{::Regex.escape(string)}\Z/i
-      end
-
-      def acronym(word)
-        @acronyms[word.downcase] = word
-        @acronym_regex = /#{acronyms.values.join("|")}/
-      end
-    end
-
-    @@inflections = Inflections.new
-    def inflections
-      @@inflections
-    end
-  end
+  Inflector.inflections.uncountable(%w(equipment information rice money species series fish sheep jeans police))
 end
