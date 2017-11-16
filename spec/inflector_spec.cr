@@ -340,5 +340,37 @@ describe LuckySupport::Inflector do
       LuckySupport::Inflector.underscore("JSONHTMLAPI").should eq "json_html_api"
     end
   end
+
+  describe "clear" do
+    it "should clear all" do
+      # ensure any data is present
+      LuckySupport::Inflector.inflections.plural(/(quiz)$/i, "\\1zes")
+      LuckySupport::Inflector.inflections.singular(/(database)s$/i, "\\1")
+      LuckySupport::Inflector.inflections.uncountable("series")
+      LuckySupport::Inflector.inflections.human("col_rpted_bugs", "Reported bugs")
+
+      LuckySupport::Inflector.inflections.clear :all
+
+      LuckySupport::Inflector.inflections.plurals.empty?.should be_true
+      LuckySupport::Inflector.inflections.singulars.empty?.should be_true
+      LuckySupport::Inflector.inflections.uncountables.empty?.should be_true
+      LuckySupport::Inflector.inflections.humans.empty?.should be_true
+    end
+
+    it "should clear with default" do
+      # ensure any data is present
+      LuckySupport::Inflector.inflections.plural(/(quiz)$/i, "\\1zes")
+      LuckySupport::Inflector.inflections.singular(/(database)s$/i, "\\1")
+      LuckySupport::Inflector.inflections.uncountable("series")
+      LuckySupport::Inflector.inflections.human("col_rpted_bugs", "Reported bugs")
+
+      LuckySupport::Inflector.inflections.clear
+
+      LuckySupport::Inflector.inflections.plurals.empty?.should be_true
+      LuckySupport::Inflector.inflections.singulars.empty?.should be_true
+      LuckySupport::Inflector.inflections.uncountables.empty?.should be_true
+      LuckySupport::Inflector.inflections.humans.empty?.should be_true
+    end
+  end
 end
 

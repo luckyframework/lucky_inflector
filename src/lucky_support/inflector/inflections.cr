@@ -40,7 +40,7 @@ module LuckySupport
       @plurals : Hash(Regex, String)
       @singulars : Hash(Regex, String)
       @uncountables : Uncountables
-      @humans : Array(String)
+      @humans : Hash(Regex, String)
       @acronyms : Hash(String, String)
       @acronym_regex = Regex
 
@@ -48,7 +48,7 @@ module LuckySupport
         @plurals = Hash(Regex, String).new
         @singulars = Hash(Regex, String).new
         @uncountables = Uncountables.new
-        @humans = Array(String).new
+        @humans = Hash(Regex, String).new
         @acronyms = Hash(String, String).new
         @acronym_regex = /(?=a)b/
       end
@@ -126,10 +126,9 @@ module LuckySupport
           when :singulars
             @singulars = Hash(Regex, String).new
           when :uncountables
-            @uncountables = Array(String).new
-            @regex_array = Array(Regex).new
+            @uncountables = Uncountables.new
           when :humans
-            @humans = Array(String).new
+            @humans = Hash(Regex, String).new
           end
         end
       end
