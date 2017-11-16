@@ -1,6 +1,7 @@
 require "./spec_helper"
 
-require "../src/lucky_support/inflector"
+require "../src/lucky_support/inflector/**"
+require "../src/lucky_support/inflections"
 require "./inflector_test_cases"
 
 include InflectorTestCases
@@ -236,6 +237,107 @@ describe LuckySupport::Inflector do
       it "should ordinalize #{number}" do
         LuckySupport::Inflector.ordinalize(number).should eq ordinalized
       end
+    end
+  end
+
+  describe "irregularities" do
+    Irregularities.each do |singular, plural|
+      it "should handle irregularity between #{singular} and #{plural}" do
+        LuckySupport::Inflector.inflections.irregular(singular, plural)
+        LuckySupport::Inflector.singularize(plural).should eq singular
+        LuckySupport::Inflector.pluralize(singular).should eq plural
+      end
+    end
+
+    Irregularities.each do |singular, plural|
+      it "should pluralize irregularity #{plural} should be the same" do
+        LuckySupport::Inflector.inflections.irregular(singular, plural)
+        LuckySupport::Inflector.pluralize(plural).should eq plural
+      end
+    end
+
+    Irregularities.each do |singular, plural|
+      it "should singularize irregularity #{singular} should be the same" do
+        LuckySupport::Inflector.inflections.irregular(singular, plural)
+        LuckySupport::Inflector.singularize(singular).should eq singular
+      end
+    end
+  end
+
+  describe "acronyms" do
+    LuckySupport::Inflector.inflections.acronym("API")
+    LuckySupport::Inflector.inflections.acronym("HTML")
+    LuckySupport::Inflector.inflections.acronym("HTTP")
+    LuckySupport::Inflector.inflections.acronym("RESTful")
+    LuckySupport::Inflector.inflections.acronym("W3C")
+    LuckySupport::Inflector.inflections.acronym("PhD")
+    LuckySupport::Inflector.inflections.acronym("RoR")
+    LuckySupport::Inflector.inflections.acronym("SSL")
+
+    #  camelize             underscore            humanize              titleize
+    [
+      ["API",               "api",                "API",                "API"],
+      ["APIController",     "api_controller",     "API controller",     "API Controller"],
+      ["Nokogiri::HTML",    "nokogiri/html",      "Nokogiri/HTML",      "Nokogiri/HTML"],
+      ["HTTPAPI",           "http_api",           "HTTP API",           "HTTP API"],
+      ["HTTP::Get",         "http/get",           "HTTP/get",           "HTTP/Get"],
+      ["SSLError",          "ssl_error",          "SSL error",          "SSL Error"],
+      ["RESTful",           "restful",            "RESTful",            "RESTful"],
+      ["RESTfulController", "restful_controller", "RESTful controller", "RESTful Controller"],
+      ["Nested::RESTful",   "nested/restful",     "Nested/RESTful",     "Nested/RESTful"],
+      ["IHeartW3C",         "i_heart_w3c",        "I heart W3C",        "I Heart W3C"],
+      ["PhDRequired",       "phd_required",       "PhD required",       "PhD Required"],
+      ["IRoRU",             "i_ror_u",            "I RoR u",            "I RoR U"],
+      ["RESTfulHTTPAPI",    "restful_http_api",   "RESTful HTTP API",   "RESTful HTTP API"],
+      ["HTTP::RESTful",     "http/restful",       "HTTP/RESTful",       "HTTP/RESTful"],
+      ["HTTP::RESTfulAPI",  "http/restful_api",   "HTTP/RESTful API",   "HTTP/RESTful API"],
+      ["APIRESTful",        "api_restful",        "API RESTful",        "API RESTful"],
+
+      # misdirection
+      ["Capistrano",        "capistrano",         "Capistrano",       "Capistrano"],
+      ["CapiController",    "capi_controller",    "Capi controller",  "Capi Controller"],
+      ["HttpsApis",         "https_apis",         "Https apis",       "Https Apis"],
+      ["Html5",             "html5",              "Html5",            "Html5"],
+      ["Restfully",         "restfully",          "Restfully",        "Restfully"],
+      ["RoRails",           "ro_rails",           "Ro rails",         "Ro Rails"]
+    ].each do |words|
+      camel, under, human, title = words
+      it "should handle acronym #{camel}" do
+        LuckySupport::Inflector.camelize(under).should eq camel
+        LuckySupport::Inflector.camelize(camel).should eq camel
+        LuckySupport::Inflector.underscore(under).should eq under
+        LuckySupport::Inflector.underscore(camel).should eq under
+        LuckySupport::Inflector.titleize(under).should eq title
+        LuckySupport::Inflector.titleize(camel).should eq title
+        LuckySupport::Inflector.humanize(under).should eq human
+      end
+    end
+
+    it "should handle acronym override" do
+      LuckySupport::Inflector.inflections.acronym("API")
+      LuckySupport::Inflector.inflections.acronym("LegacyApi")
+
+      LuckySupport::Inflector.camelize("legacyapi").should eq "LegacyApi"
+      LuckySupport::Inflector.camelize("legacy_api").should eq "LegacyAPI"
+      LuckySupport::Inflector.camelize("some_legacyapi").should eq "SomeLegacyApi"
+      LuckySupport::Inflector.camelize("nonlegacyapi").should eq "Nonlegacyapi"
+    end
+
+    it "should handle acronyms camelize lower" do
+      LuckySupport::Inflector.inflections.acronym("API")
+      LuckySupport::Inflector.inflections.acronym("HTML")
+
+      LuckySupport::Inflector.camelize("html_api", false).should eq "htmlAPI"
+      LuckySupport::Inflector.camelize("htmlAPI", false).should eq "htmlAPI"
+      LuckySupport::Inflector.camelize("HTMLAPI", false).should eq "htmlAPI"
+    end
+
+    it "should handle underscore acronym sequence" do
+      LuckySupport::Inflector.inflections.acronym("API")
+      LuckySupport::Inflector.inflections.acronym("JSON")
+      LuckySupport::Inflector.inflections.acronym("HTML")
+
+      LuckySupport::Inflector.underscore("JSONHTMLAPI").should eq "json_html_api"
     end
   end
 end

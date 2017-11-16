@@ -19,8 +19,7 @@ module LuckySupport
       else
         string = string.sub(/^(?:#{inflections.acronym_regex}(?=\b|[A-Z_])|\w)/) { |match| match.downcase }
       end
-      string = string.gsub(/((?:_|\/))([a-z\d]*)/i) { "#{$1}#{inflections.acronyms[$2]? || $2.capitalize}" }
-      string = string.gsub("_", "")
+      string = string.gsub(/(?:_|(\/))([a-z\d]*)/i) { "#{$1?}#{inflections.acronyms[$2]? || $2.capitalize}" }
       string = string.gsub("/", "::")
       string
     end
@@ -28,7 +27,7 @@ module LuckySupport
     def underscore(camel_cased_word)
       return camel_cased_word unless camel_cased_word =~ /[A-Z-]|::/
       word = camel_cased_word.to_s.gsub("::", "/")
-      word = word.gsub(/(?:(?<=([A-Za-z\d]))|\b)(#{inflections.acronym_regex})(?=\b|[^a-z])/) { "#{$1 && "_" }#{$2.downcase}" }
+      word = word.gsub(/(?:(?<=([A-Za-z\d]))|\b)(#{inflections.acronym_regex})(?=\b|[^a-z])/) { "#{$1? && "_" }#{$2.downcase}" }
       word = word.gsub(/([A-Z\d]+)([A-Z][a-z])/, "\\1_\\2")
       word = word.gsub(/([a-z\d])([A-Z])/, "\\1_\\2")
       word = word.tr("-", "_")
@@ -123,7 +122,7 @@ module LuckySupport
     private def apply_inflections(word, rules)
       result = word.to_s.dup
 
-      if result.empty? || inflections.uncountable?(result)
+      if result.empty? || inflections.uncountables.uncountable?(result)
         result
       else
         rules.each { |rule, replacement|
