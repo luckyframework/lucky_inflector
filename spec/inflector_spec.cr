@@ -372,5 +372,34 @@ describe LuckySupport::Inflector do
       LuckySupport::Inflector.inflections.humans.empty?.should be_true
     end
   end
+
+  describe "humans" do
+    it "should humanize by rule" do
+      LuckySupport::Inflector.inflections.human(/_cnt$/i, "\\1_count")
+      LuckySupport::Inflector.inflections.human(/^prefx_/i, "\\1")
+
+      LuckySupport::Inflector.humanize("jargon_cnt").should eq "Jargon count"
+      LuckySupport::Inflector.humanize("prefx_request").should eq "Request"
+    end
+
+    it "should humanize by string" do
+      LuckySupport::Inflector.inflections.human("col_rpted_bugs", "Reported bugs")
+
+      LuckySupport::Inflector.humanize("col_rpted_bugs").should eq "Reported bugs"
+      LuckySupport::Inflector.humanize("COL_rpted_bugs").should eq "Col rpted bugs"
+    end
+
+    it "should humanize with acronyms" do
+      LuckySupport::Inflector.inflections.acronym("LAX")
+      LuckySupport::Inflector.inflections.acronym("SFO")
+
+      LuckySupport::Inflector.humanize("LAX ROUNDTRIP TO SFO").should eq "LAX roundtrip to SFO"
+      LuckySupport::Inflector.humanize("LAX ROUNDTRIP TO SFO", capitalize: false).should eq "LAX roundtrip to SFO"
+      LuckySupport::Inflector.humanize("lax roundtrip to sfo").should eq "LAX roundtrip to SFO"
+      LuckySupport::Inflector.humanize("lax roundtrip to sfo", capitalize: false).should eq "LAX roundtrip to SFO"
+      LuckySupport::Inflector.humanize("Lax Roundtrip To Sfo").should eq "LAX roundtrip to SFO"
+      LuckySupport::Inflector.humanize("Lax Roundtrip To Sfo", capitalize: false).should eq "LAX roundtrip to SFO"
+    end
+  end
 end
 

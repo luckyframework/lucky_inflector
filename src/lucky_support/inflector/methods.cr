@@ -38,7 +38,12 @@ module LuckySupport
     def humanize(lower_case_and_underscored_word, capitalize = true, keep_id_suffix = false)
       result = lower_case_and_underscored_word.to_s.dup
 
-      inflections.humans.each { |(rule, replacement)| break if result = result.sub(rule, replacement) }
+      inflections.humans.each { |rule, replacement| 
+        if result.index(rule)
+          result = result.sub(rule, replacement)
+          break
+        end
+      }
 
       result = result.sub(/\A_+/, "")
       unless keep_id_suffix
