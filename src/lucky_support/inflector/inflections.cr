@@ -2,8 +2,6 @@ module LuckySupport
   module Inflector
     extend self
 
-    # TODO: this class needs work to better support adding inflections at runtime, many methods are still missin here.
-    # TODO: this needs a proper spec
     class Inflections
       class Uncountables < Array(String)
         def initialize
@@ -21,7 +19,7 @@ module LuckySupport
         end
 
         def add(words)
-          words = words.to_a.flatten.map{ |word| word.downcase }
+          words = words.to_a.flatten.map { |word| word.downcase }
           concat(words)
           @regex_array += words.map { |word| to_regex(word) }
           self
@@ -37,12 +35,6 @@ module LuckySupport
       end
 
       getter :plurals, :singulars, :uncountables, :humans, :acronyms, :acronym_regex
-      @plurals : Hash(Regex, String)
-      @singulars : Hash(Regex, String)
-      @uncountables : Uncountables
-      @humans : Hash(Regex, String)
-      @acronyms : Hash(String, String)
-      @acronym_regex = Regex
 
       def initialize
         @plurals = Hash(Regex, String).new
@@ -64,7 +56,7 @@ module LuckySupport
           rule = /#{rule}/
         end
         @uncountables.delete(replacement)
-        new_plural = { rule => replacement }
+        new_plural = {rule => replacement}
         @plurals = new_plural.merge(@plurals)
       end
 
@@ -74,7 +66,7 @@ module LuckySupport
           rule = /#{rule}/
         end
         @uncountables.delete(replacement)
-        new_singular = { rule => replacement }
+        new_singular = {rule => replacement}
         @singulars = new_singular.merge(@singulars)
       end
 
@@ -95,14 +87,14 @@ module LuckySupport
           singular(/(#{s0})#{srest}$/i, "\\1" + srest)
           singular(/(#{p0})#{prest}$/i, "\\1" + srest)
         else
-          plural(/#{s0.upcase}(?i)#{srest}$/,   p0.upcase   + prest)
+          plural(/#{s0.upcase}(?i)#{srest}$/, p0.upcase + prest)
           plural(/#{s0.downcase}(?i)#{srest}$/, p0.downcase + prest)
-          plural(/#{p0.upcase}(?i)#{prest}$/,   p0.upcase   + prest)
+          plural(/#{p0.upcase}(?i)#{prest}$/, p0.upcase + prest)
           plural(/#{p0.downcase}(?i)#{prest}$/, p0.downcase + prest)
 
-          singular(/#{s0.upcase}(?i)#{srest}$/,   s0.upcase   + srest)
+          singular(/#{s0.upcase}(?i)#{srest}$/, s0.upcase + srest)
           singular(/#{s0.downcase}(?i)#{srest}$/, s0.downcase + srest)
-          singular(/#{p0.upcase}(?i)#{prest}$/,   s0.upcase   + srest)
+          singular(/#{p0.upcase}(?i)#{prest}$/, s0.upcase + srest)
           singular(/#{p0.downcase}(?i)#{prest}$/, s0.downcase + srest)
         end
       end
@@ -113,7 +105,7 @@ module LuckySupport
 
       def human(rule : String | Regex, replacement : String)
         rule = /#{rule}/ if rule.is_a?(String)
-        @humans = { rule => replacement }.merge(@humans)
+        @humans = {rule => replacement}.merge(@humans)
       end
 
       def clear(scope = :all)
@@ -135,6 +127,7 @@ module LuckySupport
     end
 
     @@inflections = Inflections.new
+
     def inflections
       @@inflections
     end
