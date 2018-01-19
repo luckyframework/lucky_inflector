@@ -17,8 +17,8 @@ dependencies:
 ```crystal
 require "lucky_inflector"
 
-LuckyInflector::Inflector.pluralize("word") # "words"
-LuckyInflector::Inflector.singularize("categories") # "category"
+LuckyInflector.pluralize("word") # "words"
+LuckyInflector.singularize("categories") # "category"
 ```
 
 ## Contributing
@@ -32,12 +32,13 @@ LuckyInflector::Inflector.singularize("categories") # "category"
 ## Testing
 
 To run the tests:
+
 * Run the tests with `crystal spec`
 
 ## Contributors
 
-- [paulcsmith](https://github.com/paulcsmith) Paul Smith - creator, maintainer
-- [actsasflinn](https://github.com/actsasflinn) Flinn Mueller - contributor
+* [paulcsmith](https://github.com/paulcsmith) Paul Smith - creator, maintainer
+* [actsasflinn](https://github.com/actsasflinn) Flinn Mueller - contributor
 
 ## Thanks & attributions
 
